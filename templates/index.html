@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complaint Portal</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --text: #1a1d26;
+      --muted: #5c6478;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --border: #e2e8f0;
+      --success: #059669;
+      --error: #dc2626;
+      --info: #0284c7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { font-size: 1.25rem; font-weight: 600; }
+    header a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    header a:hover { text-decoration: underline; }
+    main {
+      max-width: 640px;
+      margin: 2.5rem auto;
+      padding: 0 1.5rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .card p.lead {
+      color: var(--muted);
+      margin-bottom: 1.75rem;
+      font-size: 0.95rem;
+    }
+    .flash {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.25rem;
+      font-size: 0.9rem;
+    }
+    .flash.success { background: #ecfdf5; color: var(--success); border: 1px solid #a7f3d0; }
+    .flash.error { background: #fef2f2; color: var(--error); border: 1px solid #fecaca; }
+    .flash.info { background: #f0f9ff; color: var(--info); border: 1px solid #bae6fd; }
+    .field { margin-bottom: 1.25rem; }
+    label {
+      display: block;
+      font-weight: 500;
+      font-size: 0.875rem;
+      margin-bottom: 0.4rem;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font: inherit;
+      transition: border-color 0.15s;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+    }
+    textarea { resize: vertical; min-height: 140px; }
+    .errors {
+      color: var(--error);
+      font-size: 0.8rem;
+      margin-top: 0.35rem;
+      list-style: none;
+    }
+    button[type="submit"] {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      border-radius: 8px;
+      font: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    button[type="submit"]:hover { background: var(--accent-hover); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Complaint Portal</h1>
+    <a href="{{ url_for('login') }}">Admin Login</a>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Submit a Complaint</h2>
+      <p class="lead">Tell us what went wrong and we'll review your submission as soon as possible.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="field">
+          {{ form.name.label }}
+          {{ form.name(placeholder="Jane Doe") }}
+          {% if form.name.errors %}
+            <ul class="errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="field">
+          {{ form.email.label }}
+          {{ form.email(placeholder="jane@example.com") }}
+          {% if form.email.errors %}
+            <ul class="errors">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="field">
+          {{ form.subject.label }}
+          {{ form.subject(placeholder="Brief summary of the issue") }}
+          {% if form.subject.errors %}
+            <ul class="errors">{% for e in form.subject.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="field">
+          {{ form.description.label }}
+          {{ form.description(placeholder="Please describe your complaint in detail...") }}
+          {% if form.description.errors %}
+            <ul class="errors">{% for e in form.description.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        {{ form.submit() }}
+      </form>
+    </div>
+  </main>
+</body>
+</html>

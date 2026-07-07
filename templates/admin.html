@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Complaint Portal</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --text: #1a1d26;
+      --muted: #5c6478;
+      --accent: #2563eb;
+      --border: #e2e8f0;
+      --success: #059669;
+      --error: #dc2626;
+      --info: #0284c7;
+      --pending: #d97706;
+      --progress: #2563eb;
+      --resolved: #059669;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { font-size: 1.25rem; font-weight: 600; }
+    header nav { display: flex; gap: 1.25rem; align-items: center; }
+    header a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    header a:hover { text-decoration: underline; }
+    main {
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 0 1.5rem 3rem;
+    }
+    .stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      flex: 1;
+      min-width: 120px;
+    }
+    .stat .num { font-size: 1.75rem; font-weight: 700; }
+    .stat .label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .flash {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.25rem;
+      font-size: 0.9rem;
+    }
+    .flash.success { background: #ecfdf5; color: var(--success); border: 1px solid #a7f3d0; }
+    .empty {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 3rem;
+      text-align: center;
+      color: var(--muted);
+    }
+    .complaint {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .complaint-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .complaint-header h3 { font-size: 1.05rem; }
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+    .badge.pending { background: #fef3c7; color: var(--pending); }
+    .badge.in_progress { background: #dbeafe; color: var(--progress); }
+    .badge.resolved { background: #d1fae5; color: var(--resolved); }
+    .meta {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+    .description {
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+      white-space: pre-wrap;
+    }
+    .status-form {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .status-form select {
+      padding: 0.45rem 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font: inherit;
+    }
+    .status-form button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.45rem 1rem;
+      border-radius: 6px;
+      font: inherit;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Admin Dashboard</h1>
+    <nav>
+      <a href="{{ url_for('index') }}">Public Portal</a>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="stats">
+      <div class="stat">
+        <div class="num">{{ complaints|length }}</div>
+        <div class="label">Total</div>
+      </div>
+      <div class="stat">
+        <div class="num">{{ complaints|selectattr('status', 'equalto', 'pending')|list|length }}</div>
+        <div class="label">Pending</div>
+      </div>
+      <div class="stat">
+        <div class="num">{{ complaints|selectattr('status', 'equalto', 'in_progress')|list|length }}</div>
+        <div class="label">In Progress</div>
+      </div>
+      <div class="stat">
+        <div class="num">{{ complaints|selectattr('status', 'equalto', 'resolved')|list|length }}</div>
+        <div class="label">Resolved</div>
+      </div>
+    </div>
+
+    {% if complaints %}
+      {% for c in complaints %}
+        <div class="complaint">
+          <div class="complaint-header">
+            <h3>#{{ c.id }} — {{ c.subject }}</h3>
+            <span class="badge {{ c.status }}">{{ c.status.replace('_', ' ') }}</span>
+          </div>
+          <div class="meta">
+            {{ c.name }} &lt;{{ c.email }}&gt; · {{ c.created_at.strftime('%b %d, %Y at %H:%M UTC') }}
+          </div>
+          <div class="description">{{ c.description }}</div>
+          <form class="status-form" method="POST">
+            {{ status_form.hidden_tag() }}
+            <input type="hidden" name="complaint_id" value="{{ c.id }}">
+            <select name="status">
+              <option value="pending" {% if c.status == 'pending' %}selected{% endif %}>Pending</option>
+              <option value="in_progress" {% if c.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+              <option value="resolved" {% if c.status == 'resolved' %}selected{% endif %}>Resolved</option>
+            </select>
+            <button type="submit">Update Status</button>
+          </form>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty">No complaints submitted yet.</div>
+    {% endif %}
+  </main>
+</body>
+</html>
