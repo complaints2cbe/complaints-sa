@@ -61,4 +61,51 @@ with app.app_context():
     if not User.query.filter_by(username="admin").first():
         admin = User(username="admin")
         admin.set_password("Pureobject2026!")
-        db.session.add
+        db.session.add(admin)
+        db.session.commit()
+
+# Routes (same as before)
+@app.route("/", methods=["GET", "POST"])
+def index():
+    form = ComplaintForm()
+    if form.validate_on_submit():
+        complaint = Complaint(
+            name=form.name.data.strip(),
+            email=form.email.data.strip(),
+            subject=form.subject.data.strip(),
+            description=form.description.data.strip(),
+        )
+        db.session.add(complaint)
+        db.session.commit()
+        flash(f"Complaint #{complaint.id} submitted successfully.", "success")
+        return redirect(url_for("index"))
+    return render_template("index.html", form=form)
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("admin"))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data.strip()).first()
+        if user and user.check_password(form.password.data):
+            login_user(user)
+            return redirect(url_for("admin"))
+        flash("Invalid username or password.", "error")
+    return render_template("login.html", form=form)
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out.", "info")
+    return redirect(url_for("index"))
+
+@app.route("/admin", methods=["GET", "POST"])
+@login_required
+def admin():
+    complaints = Complaint.query.order_by(Complaint.created_at.desc()).all()
+    return render_template("admin.html", complaints=complaints)
+
+if __name__ == "__main__":
+    app.run(debug=True)
