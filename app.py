@@ -140,5 +140,11 @@ def admin():
 
 if __name__ == "__main__":
     with app.app_context():
-        init_db()
+        db.create_all()
+        # Create default admin if not exists
+        if not User.query.filter_by(username="admin").first():
+            admin = User(username="admin")
+            admin.set_password("Pureobject2026!")
+            db.session.add(admin)
+            db.session.commit()
     app.run(debug=True)
